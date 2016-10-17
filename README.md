@@ -1,9 +1,50 @@
-# 创造自己的ORM框架，拒绝将就。
+# DB-ORM
 
-这是在简书上写的一篇文章，参见[做自己的ORM，不将就，就是挑剔！](http://www.jianshu.com/p/f52d34ae9289)
+If you dont like the Hibernate or some else big bloated ORM frameworks, you should try this to write a new ORM framework of your own. :D
 
-详情以及讲解请去简书查看。
+## Introduction
 
-这个仓库创建的比较仓促，也是在百忙中抽空临时建一下，用例、安装什么的都没写，我有时间会写的！
+原理介绍文章参见[这里](http://www.jianshu.com/p/f52d34ae9289)
 
-在此致歉，谢谢大家的支持！
+## Installation
+
+下载源码，使用maven构建即可，build出来是一个jar文件。
+
+## Example
+
+下面是一个简单的查询用户列表例子
+
+```java
+public static void main(String[] args) {
+	MysqlDao dao=MysqlDao.getInstances();
+	String sql="select * from user where sex = ? ";
+	List<Object> params=new ArrayList<Object>();
+	params.add(1);
+	try {
+		List<User> users=dao.getList(sql, params);
+		for (User user : users) {
+			System.out.println(user.getName());
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}
+```
+
+新增用户到数据库
+
+```java
+public static void main(String[] args) {
+	MysqlDao dao=MysqlDao.getInstances();
+  User u=new User();
+  u.setName("a");
+  u.setSex("1");
+  u.setAge("24");
+	try {
+    int retId=dao.save(u);
+    System.out.println(retId);
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}
+```

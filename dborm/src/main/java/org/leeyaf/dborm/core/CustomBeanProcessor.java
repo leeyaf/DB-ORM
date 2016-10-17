@@ -1,4 +1,4 @@
-package com.gsteam.common.util.dao;
+package org.leeyaf.dborm.core;
 
 import java.beans.PropertyDescriptor;
 import java.sql.ResultSetMetaData;
@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 import org.apache.commons.dbutils.BeanProcessor;
+import org.leeyaf.dborm.SqlHelper;
 
 public class CustomBeanProcessor extends BeanProcessor{
 
@@ -25,14 +26,12 @@ public class CustomBeanProcessor extends BeanProcessor{
                 propertyName = columnName;
             }
             for (int i = 0; i < props.length; i++) {
-
                 if (propertyName.equalsIgnoreCase(props[i].getName())) {
                     columnToProperty[col] = i;
                     break;
                 }
             }
         }
-
         return columnToProperty;
 	}
 }

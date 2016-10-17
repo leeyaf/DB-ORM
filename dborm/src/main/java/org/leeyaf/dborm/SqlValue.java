@@ -1,4 +1,4 @@
-package com.gsteam.common.util.dao;
+package org.leeyaf.dborm;
 
 import java.util.List;
 

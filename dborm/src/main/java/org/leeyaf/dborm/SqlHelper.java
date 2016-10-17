@@ -1,61 +1,30 @@
-package com.gsteam.common.util.dao;
+package org.leeyaf.dborm;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SqlHelper {
-	
-	/**
-	 * convert string like user_info to userInfo, USER_INFO to userInfo and password to password
-	 * @param befor string like user_info
-	 * @return a string like userInfo, null if catch exception
-	 */
-	public static String camelConvertColumnName(String befor) {
-		if(befor==null) return null;
-		
-		befor=befor.toLowerCase();
-		
-		if (befor.indexOf("_")>0) {
-			String[] words=befor.split("_");
-			StringBuilder finalWord=new StringBuilder(words[0]);
-			for (int i = 1; i < words.length; i++) {
-				String itemWord=words[i];
-				String first,rest;
-				first=itemWord.substring(0, 1).toUpperCase();
-				rest=itemWord.substring(1,itemWord.length());
-				finalWord.append(first).append(rest);
-			}
-			return finalWord.toString();
-		}
-		else return befor;
-	}
-	
-	/**
-	 * convert string like userInfo to user_info, password to password , UserEntity to user_entity
-	 * @param befor a string like userInfo
-	 * @return a string like user_info, null if catch exception
-	 */
-	public static String camelConvertFieldName(String befor) {
-		if(befor==null) return null;
-
-		char[] characters = befor.toCharArray();
-		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < characters.length; i++) {
-			char c = characters[i];
-			if (c >= 65 && c <= 90) {
-				char tempc = (char) ((int) c + 32);
-				if(i==0) builder.append(tempc);
-				else builder.append("_").append(tempc);
-			}
-			else builder.append(c);
-		}
-		return builder.toString();
-	}
-	
 	private String packageName;
 	public SqlHelper(String entityPackageName){
 		this.packageName=entityPackageName;
+	}
+	
+	public SqlValue getCountSql(String sql,List<Object> params){
+		sql="select count(*) "+sql.substring(sql.indexOf("from"));
+		int orderIndex,limitIndex;
+		if((orderIndex=sql.indexOf("order"))>-1)
+			sql=sql.substring(0, orderIndex);
+		if((limitIndex=sql.indexOf("limit"))>-1)
+			sql=sql.substring(0,limitIndex);
+		if(sql.contains("?")){
+			byte[] ba=sql.getBytes();
+			int count=0;
+			for (byte b : ba) 
+				if('?'==b) count++;
+			params=params.subList(0, count);
+		}else params.clear();
+		return new SqlValue(sql, params);
 	}
 	
 	public <T> SqlValue createSaveSql(T entity) throws Exception {
@@ -145,20 +114,22 @@ public class SqlHelper {
 		return new SqlValue(sql, values);
 	}
 	
+	/**
+	 * substring from 'form' to 'where' to get table name
+	 */
 	@SuppressWarnings("unchecked")
 	public <T> Class<T> getClassFromSql(String sql){
 		try {
 			String entityName=null;
-			
-			int begin=-1,end=-1;
 			if (sql.indexOf("select")>-1) {
-				begin=sql.indexOf("from")+4;
-				end=sql.indexOf("where");
+				int pos=sql.indexOf("from")+4;
+				String temp=sql.substring(pos).trim();
+				if((pos=temp.indexOf(" "))>0){
+					entityName=temp.substring(0, temp.indexOf(" ")).trim();
+				}else{
+					entityName=temp;
+				}
 			}
-			
-			if (end<0) end=sql.length();
-			entityName=sql.substring(begin,end).trim();
-			
 			String tempEntityName=camelConvertColumnName(entityName);
 			tempEntityName=tempEntityName.substring(0,1).toUpperCase()+tempEntityName.substring(1);
 			Class<T> entityClass = (Class<T>) Class.forName(packageName + "." + tempEntityName);
@@ -167,5 +138,65 @@ public class SqlHelper {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public static void main(String[] args) {
+		String sql="select * from school_class where id in (select class_id from teacher_class where teacher_id = ? )";
+		String entityName=null;
+		if (sql.indexOf("select")>-1) {
+			int begin=sql.indexOf("from")+4;
+			String temp=sql.substring(begin).trim();
+			entityName=temp.substring(0, temp.indexOf(" ")).trim();
+		}
+		System.out.println(entityName);
+	}
+	
+	//"select * from school_class where id in (select class_id from teacher_class where teacher_id = ? )
+	
+	/**
+	 * convert string like user_info to userInfo, USER_INFO to userInfo and password to password
+	 * @param befor string like user_info
+	 * @return a string like userInfo, null if catch exception
+	 */
+	public static String camelConvertColumnName(String befor) {
+		if(befor==null) return null;
+		
+		befor=befor.toLowerCase();
+		
+		if (befor.indexOf("_")>0) {
+			String[] words=befor.split("_");
+			StringBuilder finalWord=new StringBuilder(words[0]);
+			for (int i = 1; i < words.length; i++) {
+				String itemWord=words[i];
+				String first,rest;
+				first=itemWord.substring(0, 1).toUpperCase();
+				rest=itemWord.substring(1,itemWord.length());
+				finalWord.append(first).append(rest);
+			}
+			return finalWord.toString();
+		}
+		else return befor;
+	}
+	
+	/**
+	 * convert string like userInfo to user_info, password to password , UserEntity to user_entity
+	 * @param befor a string like userInfo
+	 * @return a string like user_info, null if catch exception
+	 */
+	public static String camelConvertFieldName(String befor) {
+		if(befor==null) return null;
+
+		char[] characters = befor.toCharArray();
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < characters.length; i++) {
+			char c = characters[i];
+			if (c >= 65 && c <= 90) {
+				char tempc = (char) ((int) c + 32);
+				if(i==0) builder.append(tempc);
+				else builder.append("_").append(tempc);
+			}
+			else builder.append(c);
+		}
+		return builder.toString();
 	}
 }

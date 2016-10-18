@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -94,20 +93,20 @@ public class MysqlDao {
 	
 	// base operation
 	private final QueryRunner queryRunner=new QueryRunner();
-	public <T> T executeQuery(String sql,List<?> params,ResultSetHandler<T> handler, Connection conn, boolean close) throws SQLException{
+	public <T> T executeQuery(SqlQuery query,ResultSetHandler<T> handler, Connection conn, boolean close) throws SQLException{
 		try {
-			return queryRunner.query(conn, sql, handler, params.toArray());	
+			return queryRunner.query(conn, query.getSql(), handler, query.getParams());	
 		} catch (SQLException e) {
 			throw e;
 		} finally {
 			if (close) close(conn);
 		}
 	}
-	public ResultSet executeQuery(String sql,List<?> params,Connection connection, boolean close) throws SQLException{
+	public ResultSet executeQuery(SqlQuery query,Connection connection, boolean close) throws SQLException{
 		try {
-			PreparedStatement pstm=connection.prepareStatement(sql);
+			PreparedStatement pstm=connection.prepareStatement(query.getSql());
 			int index=1;
-			for (Object object : params) {
+			for (Object object : query.getParams()) {
 				pstm.setObject(index++, object);
 			}
 			return pstm.executeQuery();
@@ -120,13 +119,13 @@ public class MysqlDao {
 			}
 		}
 	}
-	public int executeUpdate(String sql,List<?> params,Connection connection,boolean rowId,boolean close) throws SQLException{
+	public int executeUpdate(SqlQuery query,Connection connection,boolean rowId,boolean close) throws SQLException{
 		PreparedStatement pstm=null;
 		ResultSet rs=null;
 		try {
-			pstm=connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+			pstm=connection.prepareStatement(query.getSql(), Statement.RETURN_GENERATED_KEYS);
 			int index=1;
-			for (Object object : params) {
+			for (Object object : query.getParams()) {
 				pstm.setObject(index++, object);
 			}
 			int effectCount=pstm.executeUpdate();
@@ -164,108 +163,101 @@ public class MysqlDao {
 	}
 
 	// entity operation
-	private final SqlHelper queryStringHelper=new SqlHelper(modulePackage);
+	private final SqlHelper sqlHelper=new SqlHelper(modulePackage);
+	
 	public <T> int save(T entity) throws Exception{
-		SqlValue sv=queryStringHelper.createSaveSql(entity);
+		SqlQuery query=sqlHelper.createSaveSql(entity);
 		Connection connection=getConnection();
-		return executeUpdate(sv.getSql(), sv.getValues(), connection,true, true);
+		return executeUpdate(query, connection, true, true);
 	}
 	public <T> int save(T entity,Connection connection) throws Exception{
-		SqlValue sv=queryStringHelper.createSaveSql(entity);
-		return executeUpdate(sv.getSql(), sv.getValues(), connection,true, false);
+		SqlQuery query=sqlHelper.createSaveSql(entity);
+		return executeUpdate(query, connection, true, false);
 	}
 	
 	public <T> int update(T entity) throws Exception{
-		SqlValue sv=queryStringHelper.createUpdateSql(entity);
+		SqlQuery query=sqlHelper.createUpdateSql(entity);
 		Connection connection=getConnection();
-		return executeUpdate(sv.getSql(), sv.getValues(), connection,false, true);
+		return executeUpdate(query, connection, false, true);
 	}
 	public <T> int update(T entity,Connection connection) throws Exception{
-		SqlValue sv=queryStringHelper.createUpdateSql(entity);
-		return executeUpdate(sv.getSql(), sv.getValues(), connection, false,false);
+		SqlQuery query=sqlHelper.createUpdateSql(entity);
+		return executeUpdate(query, connection, false,false);
 	}
 	
 	public <T> int delete(T entity) throws Exception{
-		SqlValue sv=queryStringHelper.createDeleteSql(entity);
+		SqlQuery query=sqlHelper.createDeleteSql(entity);
 		Connection connection=getConnection();
-		return executeUpdate(sv.getSql(), sv.getValues(), connection,false, true);
+		return executeUpdate(query, connection,false, true);
 	}
 	public <T> int delete(T entity, Connection connection) throws Exception{
-		SqlValue sv=queryStringHelper.createDeleteSql(entity);
-		return executeUpdate(sv.getSql(), sv.getValues(), connection,false, false);
+		SqlQuery query=sqlHelper.createDeleteSql(entity);
+		return executeUpdate(query, connection,false, false);
 	}
 	
 	// query operation
 	private final CustomBasicRowProcessor rowProcessor=new CustomBasicRowProcessor();
-	public <T> List<T> getList(String sql,List<?> params) throws Exception{
+	
+	public <T> T getOne(SqlQuery query) throws Exception{
+		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql());
 		Connection connection=getConnection();
-		Class<T> entityClass=queryStringHelper.getClassFromSql(sql);
-		return executeQuery(sql, params, new BeanListHandler<T>(entityClass, rowProcessor), connection, true);
+		return executeQuery(query, new BeanHandler<T>(entityClass, rowProcessor), connection, true);
 	}
-	public <T> List<T> getList(String sql,List<?> params,Connection connection) throws Exception{
-		Class<T> entityClass=queryStringHelper.getClassFromSql(sql);
-		return executeQuery(sql, params, new BeanListHandler<T>(entityClass, rowProcessor), connection, false);
+	public <T> T getOne(SqlQuery query,Connection connection) throws Exception{
+		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql());
+		return executeQuery(query, new BeanHandler<T>(entityClass, rowProcessor), connection, false);
 	}
-	public <T> List<T> getList(String sql,List<?> params,Class<T> handler) throws Exception{
+	public <T> T getOne(SqlQuery query,Class<T> handler) throws Exception{
 		Connection connection=getConnection();
-		return executeQuery(sql, params, new BeanListHandler<T>(handler, rowProcessor), connection, true);
+		return executeQuery(query, new BeanHandler<T>(handler, rowProcessor), connection, true);
 	}
-	public <T> List<T> getList(String sql,List<?> params,Class<T> handler,Connection connection) throws Exception{
-		return executeQuery(sql, params, new BeanListHandler<T>(handler, rowProcessor), connection, false);
+	public <T> T getOne(SqlQuery query,Class<T> handler,Connection connection) throws Exception{
+		return executeQuery(query, new BeanHandler<T>(handler, rowProcessor), connection, false);
 	}
 	
-	public <T> T getOne(String sql,List<?> params) throws Exception{
-		Class<T> entityClass=queryStringHelper.getClassFromSql(sql);
+	public <T> List<T> getList(SqlQuery query) throws Exception{
 		Connection connection=getConnection();
-		return executeQuery(sql, params, new BeanHandler<T>(entityClass, rowProcessor), connection, true);
+		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql());
+		return executeQuery(query, new BeanListHandler<T>(entityClass, rowProcessor), connection, true);
 	}
-	public <T> T getOne(String sql,List<?> params,Connection connection) throws Exception{
-		Class<T> entityClass=queryStringHelper.getClassFromSql(sql);
-		return executeQuery(sql, params, new BeanHandler<T>(entityClass, rowProcessor), connection, false);
+	public <T> List<T> getList(SqlQuery query,Connection connection) throws Exception{
+		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql());
+		return executeQuery(query, new BeanListHandler<T>(entityClass, rowProcessor), connection, false);
 	}
-	public <T> T getOne(String sql,List<?> params,Class<T> handler) throws Exception{
+	public <T> List<T> getList(SqlQuery query,Class<T> handler) throws Exception{
 		Connection connection=getConnection();
-		return executeQuery(sql, params, new BeanHandler<T>(handler, rowProcessor), connection, true);
+		return executeQuery(query, new BeanListHandler<T>(handler, rowProcessor), connection, true);
 	}
-	public <T> T getOne(String sql,List<?> params,Class<T> handler,Connection connection) throws Exception{
-		return executeQuery(sql, params, new BeanHandler<T>(handler, rowProcessor), connection, false);
+	public <T> List<T> getList(SqlQuery query,Class<T> handler,Connection connection) throws Exception{
+		return executeQuery(query, new BeanListHandler<T>(handler, rowProcessor), connection, false);
 	}
 	
-	public <T> T getById(String sql,Object id) throws Exception{
-		Class<T> entityClass=queryStringHelper.getClassFromSql(sql);
-		List<Object> params=new ArrayList<Object>();
-		params.add(id);
+	public <T> T getById(Class<T> clazz,Object id) throws Exception{
+		SqlQuery query=new SqlQuery();
+		query.sqlAppend("select * from ").sqlAppend(SqlHelper.camelConvertFieldName(clazz.getName()));
+		query.sqlAppend("where id = ? limit 1");
+		query.paramAdd(id);
 		Connection connection=getConnection();
-		return executeQuery(sql, params, new BeanHandler<T>(entityClass, rowProcessor), connection, true);
+		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), connection, true);
 	}
-	public <T> T getById(String sql,Object id,Connection connection) throws Exception{
-		Class<T> entityClass=queryStringHelper.getClassFromSql(sql);
-		List<Object> params=new ArrayList<Object>();
-		params.add(id);
-		return executeQuery(sql, params, new BeanHandler<T>(entityClass, rowProcessor), connection, false);
-	}
-	public <T> T getById(String sql,Object id,Class<T> handler) throws Exception{
-		List<Object> params=new ArrayList<Object>();
-		params.add(id);
-		Connection connection=getConnection();
-		return executeQuery(sql, params, new BeanHandler<T>(handler, rowProcessor), connection, true);
-	}
-	public <T> T getById(String sql,Object id,Class<T> handler,Connection connection) throws Exception{
-		List<Object> params=new ArrayList<Object>();
-		params.add(id);
-		return executeQuery(sql, params, new BeanHandler<T>(handler, rowProcessor), connection, false);
+	public <T> T getById(Class<T> clazz,Object id,Connection connection) throws Exception{
+		SqlQuery query=new SqlQuery();
+		query.sqlAppend("select * from ").sqlAppend(SqlHelper.camelConvertFieldName(clazz.getName()));
+		query.sqlAppend("where id = ? limit 1");
+		query.paramAdd(id);
+		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), connection, false);
 	}
 	
-	public Long getLong(String sql,List<Object> params) throws Exception{
+	public Long getLong(SqlQuery query) throws Exception{
 		Connection connection=getConnection();
-		return executeQuery(sql, params, new ScalarHandler<Long>(), connection, true);
+		return executeQuery(query, new ScalarHandler<Long>(), connection, true);
 	}
-	public Long getLong(String sql,List<Object> params,Connection connection) throws Exception{
-		return executeQuery(sql, params, new ScalarHandler<Long>(), connection, false);
+	public Long getLong(SqlQuery query,Connection connection) throws Exception{
+		return executeQuery(query, new ScalarHandler<Long>(), connection, false);
 	}
 	
-	public Long getCount(String sql,List<Object> params,Connection connection) throws Exception{
-		SqlValue sv=queryStringHelper.getCountSql(sql, params);
-		return getLong(sv.getSql(), sv.getValues(), connection);
+	public Long getCount(SqlQuery query,Connection connection) throws Exception{
+		SqlQuery countQuery=sqlHelper.getCountSql(query);
+		return getLong(countQuery, connection);
 	}
 }

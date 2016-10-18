@@ -10,24 +10,31 @@ public class SqlHelper {
 		this.packageName=entityPackageName;
 	}
 	
-	public SqlValue getCountSql(String sql,List<Object> params){
-		sql="select count(*) "+sql.substring(sql.indexOf("from"));
+	public SqlQuery getCountSql(SqlQuery query){
+		String beforSql=query.getSql();
+		beforSql="select count(*) "+beforSql.substring(beforSql.indexOf("from"));
+		
 		int orderIndex,limitIndex;
-		if((orderIndex=sql.indexOf("order"))>-1)
-			sql=sql.substring(0, orderIndex);
-		if((limitIndex=sql.indexOf("limit"))>-1)
-			sql=sql.substring(0,limitIndex);
-		if(sql.contains("?")){
-			byte[] ba=sql.getBytes();
+		if((orderIndex=beforSql.indexOf("order"))>-1)
+			beforSql=beforSql.substring(0, orderIndex);
+		if((limitIndex=beforSql.indexOf("limit"))>-1)
+			beforSql=beforSql.substring(0,limitIndex);
+		
+		SqlQuery countQuery=new SqlQuery(beforSql);
+		Object[] params;
+		if(beforSql.contains("?")){
+			byte[] ba=beforSql.getBytes();
 			int count=0;
 			for (byte b : ba) 
 				if('?'==b) count++;
-			params=params.subList(0, count);
-		}else params.clear();
-		return new SqlValue(sql, params);
+			params=new Object[count];
+			System.arraycopy(query.getParams(), 0, params, 0, count);
+			countQuery.paramAddAll(params);
+		}
+		return countQuery;
 	}
 	
-	public <T> SqlValue createSaveSql(T entity) throws Exception {
+	public <T> SqlQuery createSaveSql(T entity) throws Exception {
 		Class<?> entityClass = entity.getClass();
 		StringBuilder builder = new StringBuilder("insert into ");
 		String tableName=camelConvertFieldName(entityClass.getSimpleName());
@@ -51,14 +58,14 @@ public class SqlHelper {
 		builder.delete(builder.lastIndexOf(" , "), builder.length());
 		builder.append(" )");
 		String sql=builder.toString();
-		return new SqlValue(sql, values);
+		return new SqlQuery(sql, values.toArray());
 	}
 	
 	/**
 	 * id作为where条件
 	 * 其他字段作为更新
 	 */
-	public <T> SqlValue createUpdateSql(T entity) throws Exception{
+	public <T> SqlQuery createUpdateSql(T entity) throws Exception{
 		Class<?> entityClass = entity.getClass();
 		StringBuilder builder = new StringBuilder("update ");
 		String tableName=camelConvertFieldName(entityClass.getSimpleName());
@@ -87,13 +94,13 @@ public class SqlHelper {
 		}
 		values.add(idFieldValue);
 		String sql=builder.toString();
-		return new SqlValue(sql, values);
+		return new SqlQuery(sql, values.toArray());
 	}
 	
 	/**
 	 * 实体作为where条件
 	 */
-	public <T> SqlValue createDeleteSql(T entity) throws Exception {
+	public <T> SqlQuery createDeleteSql(T entity) throws Exception {
 		Class<?> entityClass = entity.getClass();
 		StringBuilder builder = new StringBuilder("delete from ");
 		String tableName=camelConvertFieldName(entityClass.getSimpleName());
@@ -111,7 +118,7 @@ public class SqlHelper {
 		if (values.size()<1) return null;
 		builder.delete(builder.lastIndexOf(" and "), builder.length());
 		String sql=builder.toString();
-		return new SqlValue(sql, values);
+		return new SqlQuery(sql, values.toArray());
 	}
 	
 	/**
@@ -139,19 +146,6 @@ public class SqlHelper {
 		}
 		return null;
 	}
-	
-	public static void main(String[] args) {
-		String sql="select * from school_class where id in (select class_id from teacher_class where teacher_id = ? )";
-		String entityName=null;
-		if (sql.indexOf("select")>-1) {
-			int begin=sql.indexOf("from")+4;
-			String temp=sql.substring(begin).trim();
-			entityName=temp.substring(0, temp.indexOf(" ")).trim();
-		}
-		System.out.println(entityName);
-	}
-	
-	//"select * from school_class where id in (select class_id from teacher_class where teacher_id = ? )
 	
 	/**
 	 * convert string like user_info to userInfo, USER_INFO to userInfo and password to password

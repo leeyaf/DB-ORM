@@ -8,7 +8,7 @@ If you dont like the Hibernate or some else big bloated ORM frameworks, you shou
 
 ## Installation
 
-下载源码，使用maven构建即可，build出来是一个jar文件。
+下载源码，使用maven构建
 
 ## Example
 
@@ -17,14 +17,12 @@ If you dont like the Hibernate or some else big bloated ORM frameworks, you shou
 ```java
 public static void main(String[] args) {
 	MysqlDao dao=MysqlDao.getInstances();
-	String sql="select * from user where sex = ? ";
-	List<Object> params=new ArrayList<Object>();
-	params.add(1);
+	SqlQuery query=new SqlQuery();	// the Query object
+	query.sqlAppend("select * from user where sex = ? ");
+	query.paramAdd(1);	// 1 for male and 2 for female
 	try {
-		List<User> users=dao.getList(sql, params);
-		for (User user : users) {
-			System.out.println(user.getName());
-		}
+		List<User> users=dao.getList(query);
+		// do something..
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
@@ -36,15 +34,19 @@ public static void main(String[] args) {
 ```java
 public static void main(String[] args) {
 	MysqlDao dao=MysqlDao.getInstances();
-  User u=new User();
-  u.setName("a");
-  u.setSex("1");
-  u.setAge("24");
+	User u=new User();
+	u.setName("a");
+	u.setSex("1");
+	u.setAge("24");
 	try {
-    int retId=dao.save(u);
-    System.out.println(retId);
+		int retId=dao.save(u);
+		// do something..
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
 }
 ```
+
+## Others
+
+QQ交流群: 457364985

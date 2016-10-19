@@ -19,7 +19,8 @@ import org.leeyaf.dborm.core.CustomBasicRowProcessor;
 
 
 /**
- * core of DB-ORM. 
+ * Core class of DB-ORM framework.
+ * This is only one class you should to know, and use most. 
  * 
  * @author leeyaf
  */

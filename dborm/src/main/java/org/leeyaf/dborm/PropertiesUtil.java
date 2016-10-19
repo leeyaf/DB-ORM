@@ -4,6 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * Read the configure file named <B>jdbc.properties</B>.
+ * You can read <B>jdbc.properties.example</B> to make it.
+ * 
+ * @author leeyaf
+ *
+ */
 public class PropertiesUtil {
 	private static Properties properties;
 	

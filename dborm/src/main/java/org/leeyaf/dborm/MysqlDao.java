@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -16,9 +17,10 @@ import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.leeyaf.dborm.core.CustomBasicRowProcessor;
 
-import com.mysql.jdbc.Statement;
 
 /**
+ * core of DB-ORM. 
+ * 
  * @author leeyaf
  */
 public class MysqlDao {
@@ -234,17 +236,17 @@ public class MysqlDao {
 	
 	public <T> T getById(Class<T> clazz,Object id) throws Exception{
 		SqlQuery query=new SqlQuery();
-		query.sqlAppend("select * from ").sqlAppend(SqlHelper.camelConvertFieldName(clazz.getName()));
-		query.sqlAppend("where id = ? limit 1");
-		query.paramAdd(id);
+		query.appendSql("select * from ").appendSql(SqlHelper.camelConvertFieldName(clazz.getName()));
+		query.appendSql("where id = ? limit 1");
+		query.addParam(id);
 		Connection connection=getConnection();
 		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), connection, true);
 	}
 	public <T> T getById(Class<T> clazz,Object id,Connection connection) throws Exception{
 		SqlQuery query=new SqlQuery();
-		query.sqlAppend("select * from ").sqlAppend(SqlHelper.camelConvertFieldName(clazz.getName()));
-		query.sqlAppend("where id = ? limit 1");
-		query.paramAdd(id);
+		query.appendSql("select * from ").appendSql(SqlHelper.camelConvertFieldName(clazz.getName()));
+		query.appendSql("where id = ? limit 1");
+		query.addParam(id);
 		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), connection, false);
 	}
 	

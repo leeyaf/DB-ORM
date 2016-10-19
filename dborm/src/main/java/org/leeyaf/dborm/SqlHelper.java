@@ -4,6 +4,12 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * some sql operations and entity operation support
+ * 
+ * @author leeyaf
+ *
+ */
 public class SqlHelper {
 	private String packageName;
 	public SqlHelper(String entityPackageName){

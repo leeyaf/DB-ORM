@@ -16,7 +16,7 @@ If you dont like the Hibernate or some else big bloated ORM frameworks, you shou
 
 ```java
 public static void main(String[] args) {
-	MysqlDao dao=MysqlDao.getInstances();
+	Dao dao=Dao.getInstances();
 	SqlQuery query=new SqlQuery();	// the Query object
 	query.sqlAppend("select * from user where sex = ? ");
 	query.paramAdd(1);	// 1 for male and 2 for female
@@ -33,7 +33,7 @@ public static void main(String[] args) {
 
 ```java
 public static void main(String[] args) {
-	MysqlDao dao=MysqlDao.getInstances();
+	Dao dao=Dao.getInstances();
 	User u=new User();
 	u.setName("a");
 	u.setSex("1");

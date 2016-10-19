@@ -10,10 +10,10 @@ import java.util.List;
  * @author leeyaf
  *
  */
-public class SqlHelper {
-	private String packageName;
-	public SqlHelper(String entityPackageName){
-		this.packageName=entityPackageName;
+public class MysqlSqlHelper extends AbstractSqlHelper{
+	
+	public MysqlSqlHelper(String modulePackge){
+		super.modulePackge=modulePackge;
 	}
 	
 	public SqlQuery getCountSql(SqlQuery query){
@@ -128,6 +128,17 @@ public class SqlHelper {
 	}
 	
 	/**
+	 * 生成根据id查实体的query对象 
+	 */
+	public <T> SqlQuery createFindByIdSql(Class<T> clazz,Object id) throws Exception {
+		SqlQuery query=new SqlQuery();
+		query.appendSql("select * from ").appendSql(camelConvertFieldName(clazz.getSimpleName()));
+		query.appendSql(" where id = ? limit 1");
+		query.addParam(id);
+		return query;
+	}
+	
+	/**
 	 * substring from 'form' to 'where' to get table name
 	 */
 	@SuppressWarnings("unchecked")
@@ -145,58 +156,11 @@ public class SqlHelper {
 			}
 			String tempEntityName=camelConvertColumnName(entityName);
 			tempEntityName=tempEntityName.substring(0,1).toUpperCase()+tempEntityName.substring(1);
-			Class<T> entityClass = (Class<T>) Class.forName(packageName + "." + tempEntityName);
+			Class<T> entityClass = (Class<T>) Class.forName(super.modulePackge + "." + tempEntityName);
 			return entityClass;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
-	}
-	
-	/**
-	 * convert string like user_info to userInfo, USER_INFO to userInfo and password to password
-	 * @param befor string like user_info
-	 * @return a string like userInfo, null if catch exception
-	 */
-	public static String camelConvertColumnName(String befor) {
-		if(befor==null) return null;
-		
-		befor=befor.toLowerCase();
-		
-		if (befor.indexOf("_")>0) {
-			String[] words=befor.split("_");
-			StringBuilder finalWord=new StringBuilder(words[0]);
-			for (int i = 1; i < words.length; i++) {
-				String itemWord=words[i];
-				String first,rest;
-				first=itemWord.substring(0, 1).toUpperCase();
-				rest=itemWord.substring(1,itemWord.length());
-				finalWord.append(first).append(rest);
-			}
-			return finalWord.toString();
-		}
-		else return befor;
-	}
-	
-	/**
-	 * convert string like userInfo to user_info, password to password , UserEntity to user_entity
-	 * @param befor a string like userInfo
-	 * @return a string like user_info, null if catch exception
-	 */
-	public static String camelConvertFieldName(String befor) {
-		if(befor==null) return null;
-
-		char[] characters = befor.toCharArray();
-		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < characters.length; i++) {
-			char c = characters[i];
-			if (c >= 65 && c <= 90) {
-				char tempc = (char) ((int) c + 32);
-				if(i==0) builder.append(tempc);
-				else builder.append("_").append(tempc);
-			}
-			else builder.append(c);
-		}
-		return builder.toString();
 	}
 }

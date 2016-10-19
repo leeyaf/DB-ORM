@@ -24,17 +24,18 @@ import org.leeyaf.dborm.core.CustomBasicRowProcessor;
  * 
  * @author leeyaf
  */
-public class MysqlDao {
+public class Dao {
 	// singleton
-	private static final MysqlDao THIS=new MysqlDao();
-	private MysqlDao(){}
-	public static MysqlDao getInstances(){
+	private static final Dao THIS=new Dao();
+	private Dao(){}
+	public static Dao getInstances(){
 		return THIS;
 	}
-	
-	// connection operation
 	private final String modulePackage=PropertiesUtil.getString("jdbc.module.package");
+	private final AbstractSqlHelper sqlHelper=new MysqlSqlHelper(modulePackage);
 	private final DataSource dataSource=getDataSource();
+
+	// connection operation
 	private DataSource getDataSource(){
 		PoolProperties p = new PoolProperties();
         p.setUrl(PropertiesUtil.getString("jdbc.url"));
@@ -105,9 +106,19 @@ public class MysqlDao {
 			if (close) close(conn);
 		}
 	}
-	public ResultSet executeQuery(SqlQuery query,Connection connection, boolean close) throws SQLException{
+	/**
+	 * For security, you should provide Connection and PreparedStatement before use.
+	 * And both of ResultSet, PreparedStatement and Connection wont close, so you should
+	 * close it yourself.
+	 * 
+	 * @param query your SQL and parameters
+	 * @param connection this method wont close it
+	 * @param pstm you should <B>CLOSE</B> this entity yourself
+	 * @return you should <B>CLOSE</B> the ResultSet before PreparedStatement and Connection
+	 * @throws SQLException
+	 */
+	public ResultSet executeQuery(SqlQuery query,Connection connection,PreparedStatement pstm) throws SQLException{
 		try {
-			PreparedStatement pstm=connection.prepareStatement(query.getSql());
 			int index=1;
 			for (Object object : query.getParams()) {
 				pstm.setObject(index++, object);
@@ -115,11 +126,6 @@ public class MysqlDao {
 			return pstm.executeQuery();
 		} catch (SQLException e) {
 			throw e;
-		} finally {
-			if (close){
-				// TODO: close ResultSet Statement
-				close(connection);
-			}
 		}
 	}
 	public int executeUpdate(SqlQuery query,Connection connection,boolean rowId,boolean close) throws SQLException{
@@ -166,8 +172,6 @@ public class MysqlDao {
 	}
 
 	// entity operation
-	private final SqlHelper sqlHelper=new SqlHelper(modulePackage);
-	
 	public <T> int save(T entity) throws Exception{
 		SqlQuery query=sqlHelper.createSaveSql(entity);
 		Connection connection=getConnection();
@@ -236,18 +240,12 @@ public class MysqlDao {
 	}
 	
 	public <T> T getById(Class<T> clazz,Object id) throws Exception{
-		SqlQuery query=new SqlQuery();
-		query.appendSql("select * from ").appendSql(SqlHelper.camelConvertFieldName(clazz.getName()));
-		query.appendSql("where id = ? limit 1");
-		query.addParam(id);
+		SqlQuery query=sqlHelper.createFindByIdSql(clazz, id);
 		Connection connection=getConnection();
 		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), connection, true);
 	}
 	public <T> T getById(Class<T> clazz,Object id,Connection connection) throws Exception{
-		SqlQuery query=new SqlQuery();
-		query.appendSql("select * from ").appendSql(SqlHelper.camelConvertFieldName(clazz.getName()));
-		query.appendSql("where id = ? limit 1");
-		query.addParam(id);
+		SqlQuery query=sqlHelper.createFindByIdSql(clazz, id);
 		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), connection, false);
 	}
 	

@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 import org.apache.commons.dbutils.BeanProcessor;
-import org.leeyaf.dborm.SqlHelper;
+import org.leeyaf.dborm.AbstractSqlHelper;
 
 public class CustomBeanProcessor extends BeanProcessor{
 
@@ -21,7 +21,7 @@ public class CustomBeanProcessor extends BeanProcessor{
             if (null == columnName || 0 == columnName.length()) {
               columnName = rsmd.getColumnName(col);
             }
-            String propertyName = SqlHelper.camelConvertColumnName(columnName);
+            String propertyName = AbstractSqlHelper.camelConvertColumnName(columnName);
             if (propertyName == null) {
                 propertyName = columnName;
             }

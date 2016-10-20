@@ -12,14 +12,79 @@ If you dont like the Hibernate or some else big bloated ORM frameworks, you shou
 
 ## Example
 
-下面是一个简单的查询用户列表例子
+使用之前你需要创建一个module
+
+```java
+public class User{
+	@Id
+	private Integer id;
+	private String name;
+	private Integer sex;	// 1 for male and 2 for female
+	private Integer age;
+
+	// getter and setter
+}
+```
+
+### 新增
+
+```java
+public static void main(String[] args) {
+	Dao dao=Dao.getInstances();
+	User u=new User();
+	u.setName("a");
+	u.setSex(1);
+	u.setAge(24);
+	try {
+		int retId=dao.save(u);
+		// do something..
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}
+```
+
+### 更新
+
+```java
+public static void main(String[] args) {
+	Dao dao=Dao.getInstances();
+	User u=new User();
+	u.setId(123);
+	u.setName("Mike");
+	try {
+		int effect=dao.update(u);
+		// do something..
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}
+```
+
+### 删除
+
+```java
+public static void main(String[] args) {
+	Dao dao=Dao.getInstances();
+	User u=new User();
+	u.setId(123);
+	try {
+		int effect=dao.delete(u);
+		// do something..
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}
+```
+
+### 查询
 
 ```java
 public static void main(String[] args) {
 	Dao dao=Dao.getInstances();
 	SqlQuery query=new SqlQuery();	// the Query object
-	query.sqlAppend("select * from user where sex = ? ");
-	query.paramAdd(1);	// 1 for male and 2 for female
+	query.appendSql("select * from user where sex = ? ");
+	query.addParam(1);
 	try {
 		List<User> users=dao.getList(query);
 		// do something..
@@ -29,23 +94,7 @@ public static void main(String[] args) {
 }
 ```
 
-新增用户到数据库
-
-```java
-public static void main(String[] args) {
-	Dao dao=Dao.getInstances();
-	User u=new User();
-	u.setName("a");
-	u.setSex("1");
-	u.setAge("24");
-	try {
-		int retId=dao.save(u);
-		// do something..
-	} catch (Exception e) {
-		e.printStackTrace();
-	}
-}
-```
+是不是很简单？
 
 ## Others
 

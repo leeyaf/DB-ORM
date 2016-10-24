@@ -12,7 +12,7 @@ If you dont like the Hibernate or some else big bloated ORM frameworks, you shou
 
 ## Example
 
-使用之前你需要创建一个module
+使用之前你需要创建一个module，这里所有的字段都要使用封装类型，而不是直接类型。就是说int要用Integer代替，float要用Float代替。
 
 ```java
 public class User{

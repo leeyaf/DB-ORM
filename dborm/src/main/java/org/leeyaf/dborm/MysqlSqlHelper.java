@@ -16,6 +16,7 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 		super.modulePackge=modulePackge;
 	}
 	
+	@Override
 	public SqlQuery getCountSql(SqlQuery query){
 		String beforSql=query.getSql();
 		beforSql="select count(*) "+beforSql.substring(beforSql.indexOf("from"));
@@ -40,6 +41,7 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 		return countQuery;
 	}
 	
+	@Override
 	public <T> SqlQuery createSaveSql(T entity) throws Exception {
 		Class<?> entityClass = entity.getClass();
 		StringBuilder builder = new StringBuilder("insert into ");
@@ -71,6 +73,7 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 	 * id作为where条件
 	 * 其他字段作为更新
 	 */
+	@Override
 	public <T> SqlQuery createUpdateSql(T entity) throws Exception{
 		Class<?> entityClass = entity.getClass();
 		StringBuilder builder = new StringBuilder("update ");
@@ -106,6 +109,7 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 	/**
 	 * 实体作为where条件
 	 */
+	@Override
 	public <T> SqlQuery createDeleteSql(T entity) throws Exception {
 		Class<?> entityClass = entity.getClass();
 		StringBuilder builder = new StringBuilder("delete from ");
@@ -130,6 +134,7 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 	/**
 	 * 生成根据id查实体的query对象 
 	 */
+	@Override
 	public <T> SqlQuery createFindByIdSql(Class<T> clazz,Object id) throws Exception {
 		SqlQuery query=new SqlQuery();
 		query.appendSql("select * from ").appendSql(camelConvertFieldName(clazz.getSimpleName()));
@@ -141,6 +146,7 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 	/**
 	 * substring from 'form' to 'where' to get table name
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> Class<T> getClassFromSql(String sql){
 		try {

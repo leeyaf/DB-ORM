@@ -31,6 +31,7 @@ public class Dao {
 	public static Dao getInstances(){
 		return THIS;
 	}
+	
 	private final String modulePackage=PropertiesUtil.getString("jdbc.module.package");
 	private final AbstractSqlHelper sqlHelper=new MysqlSqlHelper(modulePackage);
 	private final DataSource dataSource=getDataSource();

@@ -2,10 +2,6 @@ package org.leeyaf.dborm;
 
 public abstract class AbstractSqlHelper {
 	protected String modulePackge;
-
-	public void setModulePackge(String modulePackge) {
-		this.modulePackge = modulePackge;
-	}
 	
 	public abstract SqlQuery getCountSql(SqlQuery query);
 	

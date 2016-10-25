@@ -12,8 +12,8 @@ import java.util.List;
  */
 public class MysqlSqlHelper extends AbstractSqlHelper{
 	
-	public MysqlSqlHelper(String modulePackge){
-		super.modulePackge=modulePackge;
+	public MysqlSqlHelper(){
+		super.modulePackge=Dao.getModulePackage();
 	}
 	
 	@Override

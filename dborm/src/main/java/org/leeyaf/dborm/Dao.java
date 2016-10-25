@@ -31,11 +31,13 @@ public class Dao {
 	public static Dao getInstances(){
 		return THIS;
 	}
-	
-	private final String modulePackage=PropertiesUtil.getString("jdbc.module.package");
-	private final AbstractSqlHelper sqlHelper=new MysqlSqlHelper(modulePackage);
+	private static final String modulePackage=PropertiesUtil.getString("jdbc.module.package");
+	protected static String getModulePackage() {
+		return modulePackage;
+	}
+	private final AbstractSqlHelper sqlHelper=new MysqlSqlHelper();
 	private final DataSource dataSource=getDataSource();
-
+	
 	// connection operation
 	private DataSource getDataSource(){
 		PoolProperties p = new PoolProperties();
@@ -64,28 +66,28 @@ public class Dao {
 	public Connection getConnection() throws Exception{
 		return dataSource.getConnection();
 	}
-	public void rollback(Connection connection){
+	public static void rollback(Connection connection){
 		try {
 			DbUtils.rollback(connection);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
-	public void close(Connection connection){
+	public static void close(Connection connection){
 		try {
 			DbUtils.close(connection);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
-	public void close(PreparedStatement statement){
+	public static void close(PreparedStatement statement){
 		try {
 			DbUtils.close(statement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
-	public void close(ResultSet resultSet){
+	public static void close(ResultSet resultSet){
 		try {
 			DbUtils.close(resultSet);
 		} catch (SQLException e) {
@@ -105,28 +107,6 @@ public class Dao {
 			throw e;
 		} finally {
 			if (close) close(conn);
-		}
-	}
-	/**
-	 * For security, you should provide Connection and PreparedStatement before use.
-	 * And both of ResultSet, PreparedStatement and Connection wont close, so you should
-	 * close it yourself.
-	 * 
-	 * @param query your SQL and parameters
-	 * @param connection this method wont close it
-	 * @param pstm you should <B>CLOSE</B> this entity yourself
-	 * @return you should <B>CLOSE</B> the ResultSet before PreparedStatement and Connection
-	 * @throws SQLException
-	 */
-	public ResultSet executeQuery(SqlQuery query,Connection connection,PreparedStatement pstm) throws SQLException{
-		try {
-			int index=1;
-			for (Object object : query.getParams()) {
-				pstm.setObject(index++, object);
-			}
-			return pstm.executeQuery();
-		} catch (SQLException e) {
-			throw e;
 		}
 	}
 	public int executeUpdate(SqlQuery query,Connection connection,boolean rowId,boolean close) throws SQLException{

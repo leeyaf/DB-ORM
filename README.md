@@ -94,7 +94,9 @@ public static void main(String[] args) {
 }
 ```
 
-是不是很简单？
+## Automation
+
+可以使用 <code>ModuleGenerator.generate("tabel_name");</code> 自动生成实体映射文件。
 
 ## Others
 

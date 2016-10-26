@@ -61,4 +61,15 @@ public abstract class AbstractSqlHelper {
 		}
 		return builder.toString();
 	}
+	
+	/**
+	 * convert user_info to UserInfo, password to Password
+	 * @param befor
+	 * @return
+	 */
+	public static String camelConvertClassName(String befor) {
+		String after=camelConvertColumnName(befor);
+		char first=Character.toUpperCase(after.charAt(0));
+		return first+after.substring(1);
+	}
 }

@@ -1,8 +1,7 @@
 package org.leeyaf.dborm;
 
 public abstract class AbstractSqlHelper {
-	protected String modulePackge;
-	
+
 	public abstract SqlQuery getCountSql(SqlQuery query);
 	
 	public abstract <T> SqlQuery createSaveSql(T entity) throws Exception;
@@ -13,7 +12,7 @@ public abstract class AbstractSqlHelper {
 	
 	public abstract <T> SqlQuery createFindByIdSql(Class<T> clazz,Object id) throws Exception;
 	
-	public abstract <T> Class<T> getClassFromSql(String sql);
+	public abstract <T> Class<T> getClassFromSql(String sql,String modulePackage);
 	
 	/**
 	 * convert string like user_info to userInfo, USER_INFO to userInfo and password to password
@@ -69,7 +68,11 @@ public abstract class AbstractSqlHelper {
 	 */
 	public static String camelConvertClassName(String befor) {
 		String after=camelConvertColumnName(befor);
-		char first=Character.toUpperCase(after.charAt(0));
-		return first+after.substring(1);
+		return firstCharToUpperCase(after);
+	}
+	
+	public static String firstCharToUpperCase(String befor){
+		char first=Character.toUpperCase(befor.charAt(0));
+		return first+befor.substring(1);
 	}
 }

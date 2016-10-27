@@ -187,12 +187,12 @@ public class Dao {
 	private final CustomBasicRowProcessor rowProcessor=new CustomBasicRowProcessor();
 	
 	public <T> T getOne(SqlQuery query) throws Exception{
-		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql());
+		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
 		Connection connection=getConnection();
 		return executeQuery(query, new BeanHandler<T>(entityClass, rowProcessor), connection, true);
 	}
 	public <T> T getOne(SqlQuery query,Connection connection) throws Exception{
-		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql());
+		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
 		return executeQuery(query, new BeanHandler<T>(entityClass, rowProcessor), connection, false);
 	}
 	public <T> T getOne(SqlQuery query,Class<T> handler) throws Exception{
@@ -205,11 +205,11 @@ public class Dao {
 	
 	public <T> List<T> getList(SqlQuery query) throws Exception{
 		Connection connection=getConnection();
-		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql());
+		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
 		return executeQuery(query, new BeanListHandler<T>(entityClass, rowProcessor), connection, true);
 	}
 	public <T> List<T> getList(SqlQuery query,Connection connection) throws Exception{
-		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql());
+		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
 		return executeQuery(query, new BeanListHandler<T>(entityClass, rowProcessor), connection, false);
 	}
 	public <T> List<T> getList(SqlQuery query,Class<T> handler) throws Exception{

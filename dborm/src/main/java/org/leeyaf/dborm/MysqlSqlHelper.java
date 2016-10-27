@@ -12,10 +12,6 @@ import java.util.List;
  */
 public class MysqlSqlHelper extends AbstractSqlHelper{
 	
-	public MysqlSqlHelper(){
-		super.modulePackge=Dao.getModulePackage();
-	}
-	
 	@Override
 	public SqlQuery getCountSql(SqlQuery query){
 		String beforSql=query.getSql();
@@ -138,7 +134,14 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 	public <T> SqlQuery createFindByIdSql(Class<T> clazz,Object id) throws Exception {
 		SqlQuery query=new SqlQuery();
 		query.appendSql("select * from ").appendSql(camelConvertFieldName(clazz.getSimpleName()));
-		query.appendSql(" where id = ? limit 1");
+		Field[] fields=clazz.getDeclaredFields();
+		String idField=null;
+		for (Field field : fields) {
+			if(field.isAnnotationPresent(Id.class)){
+				idField=camelConvertFieldName(field.getName());
+			}
+		}
+		query.appendSql(" where ").appendSql(idField).appendSql(" = ? limit 1");
 		query.addParam(id);
 		return query;
 	}
@@ -148,7 +151,7 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> Class<T> getClassFromSql(String sql){
+	public <T> Class<T> getClassFromSql(String sql,String modulePackage){
 		try {
 			String entityName=null;
 			if (sql.indexOf("select")>-1) {
@@ -162,7 +165,7 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 			}
 			String tempEntityName=camelConvertColumnName(entityName);
 			tempEntityName=tempEntityName.substring(0,1).toUpperCase()+tempEntityName.substring(1);
-			Class<T> entityClass = (Class<T>) Class.forName(super.modulePackge + "." + tempEntityName);
+			Class<T> entityClass = (Class<T>) Class.forName(modulePackage + "." + tempEntityName);
 			return entityClass;
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -16,11 +16,15 @@ import java.util.List;
 public class ModuleGenerator {
 	private static Dao dao=Dao.getInstances();
 	
+	/**
+	 * generate module class file to module package that configured in resources
+	 * @param table table name like user_info
+	 */
 	public static void generate(String table){
 		try {
 			List<Field> fields=new ArrayList<>();
 			Connection conn=dao.getConnection();
-			PreparedStatement pstm=conn.prepareStatement("desc "+table);
+			PreparedStatement pstm=conn.prepareStatement("desc "+table);	// description of table
 			ResultSet rs=pstm.executeQuery();
 			while (rs.next()) {
 				String fieldName=AbstractSqlHelper.camelConvertColumnName(rs.getString(1));
@@ -31,7 +35,7 @@ public class ModuleGenerator {
 			Dao.close(pstm);
 			Dao.close(conn);
 			
-			String className=AbstractSqlHelper.camelConvertClassName(table);
+			String className=AbstractSqlHelper.camelConvertClassName(table);	// table name convert to class name
 			
 			StringBuilder classCode=new StringBuilder();
 			classCode.append("package ").append(Dao.getModulePackage()).append(";\r\n\r\n");
@@ -40,16 +44,21 @@ public class ModuleGenerator {
 			classCode.append("public class ").append(className).append("{\r\n");
 			classCode.append("\t@Id\r\n");
 			
-			for (Field field : fields) {
+			for (Field field : fields) {	// create fields
 				classCode.append("\tprivate ").append(field.fieldType).append(" ").append(field.fieldName).append(";\r\n");
 			}
 			
 			classCode.append("\r\n");
 			
-			for (Field field : fields) {
+			for (Field field : fields) {	// create getter and setter
 				classCode.append("\tpublic ").append(field.fieldType).append(" ")
-					.append("get").append(AbstractSqlHelper.camelConvertClassName(field.fieldName)).append("(){\r\n");
+					.append("get").append(AbstractSqlHelper.firstCharToUpperCase(field.fieldName)).append("(){\r\n");
 				classCode.append("\t\treturn this.").append(field.fieldName).append(";\r\n");
+				classCode.append("\t}\r\n");
+				
+				classCode.append("\tpublic void ").append("set").append(AbstractSqlHelper.firstCharToUpperCase(field.fieldName))
+					.append("(").append(field.fieldType).append(" ").append(field.fieldName).append("){\r\n");
+				classCode.append("\t\tthis.").append(field.fieldName).append(" = ").append(field.fieldName).append(";\r\n");
 				classCode.append("\t}\r\n");
 			}
 			classCode.append("}");
@@ -77,6 +86,8 @@ public class ModuleGenerator {
 		if(befor.indexOf("int")>-1) return "Integer";
 		if(befor.indexOf("varchar")>-1) return "String";
 		if(befor.indexOf("timestamp")>-1) return "Date";
+		if(befor.indexOf("text")>-1) return "String";
+		if(befor.indexOf("double")>-1) return "Double";
 		return "Object";
 	}
 	

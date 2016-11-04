@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -20,7 +21,7 @@ import org.leeyaf.dborm.core.CustomBasicRowProcessor;
 
 /**
  * Core class of DB-ORM framework.
- * This is only one class you should to know, and use most. 
+ * This is the class that you should to know, and use most. 
  * 
  * @author leeyaf
  */
@@ -151,12 +152,11 @@ public class Dao {
 			if (close) close(conn);
 		}
 	}
-
+	
 	// entity operation
 	public <T> int save(T entity) throws Exception{
 		SqlQuery query=sqlHelper.createSaveSql(entity);
-		Connection connection=getConnection();
-		return executeUpdate(query, connection, true, true);
+		return executeUpdate(query, getConnection(), true, true);
 	}
 	public <T> int save(T entity,Connection connection) throws Exception{
 		SqlQuery query=sqlHelper.createSaveSql(entity);
@@ -165,8 +165,7 @@ public class Dao {
 	
 	public <T> int update(T entity) throws Exception{
 		SqlQuery query=sqlHelper.createUpdateSql(entity);
-		Connection connection=getConnection();
-		return executeUpdate(query, connection, false, true);
+		return executeUpdate(query, getConnection(), false, true);
 	}
 	public <T> int update(T entity,Connection connection) throws Exception{
 		SqlQuery query=sqlHelper.createUpdateSql(entity);
@@ -175,8 +174,7 @@ public class Dao {
 	
 	public <T> int delete(T entity) throws Exception{
 		SqlQuery query=sqlHelper.createDeleteSql(entity);
-		Connection connection=getConnection();
-		return executeUpdate(query, connection,false, true);
+		return executeUpdate(query, getConnection(),false, true);
 	}
 	public <T> int delete(T entity, Connection connection) throws Exception{
 		SqlQuery query=sqlHelper.createDeleteSql(entity);
@@ -187,34 +185,30 @@ public class Dao {
 	private final CustomBasicRowProcessor rowProcessor=new CustomBasicRowProcessor();
 	
 	public <T> T getOne(SqlQuery query) throws Exception{
-		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
-		Connection connection=getConnection();
-		return executeQuery(query, new BeanHandler<T>(entityClass, rowProcessor), connection, true);
+		Class<T> clazz=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
+		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), getConnection(), true);
 	}
 	public <T> T getOne(SqlQuery query,Connection connection) throws Exception{
-		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
-		return executeQuery(query, new BeanHandler<T>(entityClass, rowProcessor), connection, false);
+		Class<T> clazz=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
+		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), connection, false);
 	}
 	public <T> T getOne(SqlQuery query,Class<T> handler) throws Exception{
-		Connection connection=getConnection();
-		return executeQuery(query, new BeanHandler<T>(handler, rowProcessor), connection, true);
+		return executeQuery(query, new BeanHandler<T>(handler, rowProcessor), getConnection(), true);
 	}
 	public <T> T getOne(SqlQuery query,Class<T> handler,Connection connection) throws Exception{
 		return executeQuery(query, new BeanHandler<T>(handler, rowProcessor), connection, false);
 	}
 	
 	public <T> List<T> getList(SqlQuery query) throws Exception{
-		Connection connection=getConnection();
-		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
-		return executeQuery(query, new BeanListHandler<T>(entityClass, rowProcessor), connection, true);
+		Class<T> clazz=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
+		return executeQuery(query, new BeanListHandler<T>(clazz, rowProcessor), getConnection(), true);
 	}
 	public <T> List<T> getList(SqlQuery query,Connection connection) throws Exception{
-		Class<T> entityClass=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
-		return executeQuery(query, new BeanListHandler<T>(entityClass, rowProcessor), connection, false);
+		Class<T> clazz=sqlHelper.getClassFromSql(query.getSql(),modulePackage);
+		return executeQuery(query, new BeanListHandler<T>(clazz, rowProcessor), connection, false);
 	}
 	public <T> List<T> getList(SqlQuery query,Class<T> handler) throws Exception{
-		Connection connection=getConnection();
-		return executeQuery(query, new BeanListHandler<T>(handler, rowProcessor), connection, true);
+		return executeQuery(query, new BeanListHandler<T>(handler, rowProcessor), getConnection(), true);
 	}
 	public <T> List<T> getList(SqlQuery query,Class<T> handler,Connection connection) throws Exception{
 		return executeQuery(query, new BeanListHandler<T>(handler, rowProcessor), connection, false);
@@ -222,17 +216,26 @@ public class Dao {
 	
 	public <T> T getById(Class<T> clazz,Object id) throws Exception{
 		SqlQuery query=sqlHelper.createFindByIdSql(clazz, id);
-		Connection connection=getConnection();
-		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), connection, true);
+		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), getConnection(), true);
 	}
 	public <T> T getById(Class<T> clazz,Object id,Connection connection) throws Exception{
 		SqlQuery query=sqlHelper.createFindByIdSql(clazz, id);
 		return executeQuery(query, new BeanHandler<T>(clazz, rowProcessor), connection, false);
 	}
 	
+	public <T> List<T> getByIds(Class<T> clazz,List<?> ids) throws Exception{
+		if(null==ids||ids.isEmpty()) return new ArrayList<T>();
+		SqlQuery query=sqlHelper.createFindByIdsSql(clazz, ids);
+		return executeQuery(query, new BeanListHandler<T>(clazz, rowProcessor), getConnection(), true);
+	}
+	public <T> List<T> getByIds(Class<T> clazz,List<?> ids,Connection connection) throws Exception{
+		if(null==ids||ids.isEmpty()) return new ArrayList<T>();
+		SqlQuery query=sqlHelper.createFindByIdsSql(clazz, ids);
+		return executeQuery(query, new BeanListHandler<T>(clazz, rowProcessor), connection, false);
+	}
+	
 	public Long getLong(SqlQuery query) throws Exception{
-		Connection connection=getConnection();
-		return executeQuery(query, new ScalarHandler<Long>(), connection, true);
+		return executeQuery(query, new ScalarHandler<Long>(), getConnection(), true);
 	}
 	public Long getLong(SqlQuery query,Connection connection) throws Exception{
 		return executeQuery(query, new ScalarHandler<Long>(), connection, false);

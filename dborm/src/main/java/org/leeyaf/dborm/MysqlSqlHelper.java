@@ -134,15 +134,21 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 	public <T> SqlQuery createFindByIdSql(Class<T> clazz,Object id) throws Exception {
 		SqlQuery query=new SqlQuery();
 		query.appendSql("select * from ").appendSql(camelConvertFieldName(clazz.getSimpleName()));
-		Field[] fields=clazz.getDeclaredFields();
-		String idField=null;
-		for (Field field : fields) {
-			if(field.isAnnotationPresent(Id.class)){
-				idField=camelConvertFieldName(field.getName());
-			}
-		}
-		query.appendSql(" where ").appendSql(idField).appendSql(" = ? limit 1");
+		query.appendSql(" where ").appendSql(getIdFieldName(clazz)).appendSql(" = ? limit 1");
 		query.addParam(id);
+		return query;
+	}
+	
+	@Override
+	public <T> SqlQuery createFindByIdsSql(Class<T> clazz,List<?> ids) throws Exception {
+		SqlQuery query=new SqlQuery();
+		query.appendSql("select * from ").appendSql(camelConvertFieldName(clazz.getSimpleName()));
+		query.appendSql(" where ").appendSql(getIdFieldName(clazz)).appendSql(" in (");
+		for (Object id : ids) {
+			query.appendSql(" ?,").addParam(id);
+		}
+		query.getSqlData().deleteCharAt(query.getSqlData().length()-2);
+		query.appendSql(")");
 		return query;
 	}
 	

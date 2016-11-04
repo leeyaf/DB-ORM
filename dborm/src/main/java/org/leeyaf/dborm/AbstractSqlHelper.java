@@ -1,5 +1,8 @@
 package org.leeyaf.dborm;
 
+import java.lang.reflect.Field;
+import java.util.List;
+
 public abstract class AbstractSqlHelper {
 
 	public abstract SqlQuery getCountSql(SqlQuery query);
@@ -11,6 +14,8 @@ public abstract class AbstractSqlHelper {
 	public abstract <T> SqlQuery createDeleteSql(T entity) throws Exception;
 	
 	public abstract <T> SqlQuery createFindByIdSql(Class<T> clazz,Object id) throws Exception;
+	
+	public abstract <T> SqlQuery createFindByIdsSql(Class<T> clazz,List<?> ids) throws Exception;
 	
 	public abstract <T> Class<T> getClassFromSql(String sql,String modulePackage);
 	
@@ -74,5 +79,15 @@ public abstract class AbstractSqlHelper {
 	public static String firstCharToUpperCase(String befor){
 		char first=Character.toUpperCase(befor.charAt(0));
 		return first+befor.substring(1);
+	}
+	
+	public static <T> String getIdFieldName(Class<T> clazz){
+		Field[] fields=clazz.getDeclaredFields();
+		for (Field field : fields) {
+			if(field.isAnnotationPresent(Id.class)){
+				return camelConvertFieldName(field.getName());
+			}
+		}
+		return null;
 	}
 }

@@ -225,12 +225,16 @@ public class Dao {
 	
 	public <T> List<T> getByIds(Class<T> clazz,List<?> ids) throws Exception{
 		if(null==ids||ids.isEmpty()) return new ArrayList<T>();
-		SqlQuery query=sqlHelper.createFindByIdsSql(clazz, ids);
+		SqlQuery query=null;
+		if(ids.size()<2) query=sqlHelper.createFindByIdSql(clazz, ids.get(0));
+		else query=sqlHelper.createFindByIdsSql(clazz, ids);
 		return executeQuery(query, new BeanListHandler<T>(clazz, rowProcessor), getConnection(), true);
 	}
 	public <T> List<T> getByIds(Class<T> clazz,List<?> ids,Connection connection) throws Exception{
 		if(null==ids||ids.isEmpty()) return new ArrayList<T>();
-		SqlQuery query=sqlHelper.createFindByIdsSql(clazz, ids);
+		SqlQuery query=null;
+		if(ids.size()<2) query=sqlHelper.createFindByIdSql(clazz, ids.get(0));
+		else query=sqlHelper.createFindByIdsSql(clazz, ids);
 		return executeQuery(query, new BeanListHandler<T>(clazz, rowProcessor), connection, false);
 	}
 	

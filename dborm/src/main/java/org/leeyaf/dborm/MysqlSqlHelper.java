@@ -147,7 +147,7 @@ public class MysqlSqlHelper extends AbstractSqlHelper{
 		for (Object id : ids) {
 			query.appendSql(" ?,").addParam(id);
 		}
-		query.getSqlData().deleteCharAt(query.getSqlData().length()-2);
+		query.getSqlData().deleteCharAt(query.getSqlData().length()-1);
 		query.appendSql(")");
 		return query;
 	}

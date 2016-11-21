@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
@@ -130,9 +131,9 @@ public class Dao {
 		} catch (SQLException e) {
 			throw e;
 		} finally {
+			close(rs);
+			close(pstm);
 			if (close){
-				close(rs);
-				close(pstm);
 				close(connection);
 			}
 		}
@@ -197,6 +198,27 @@ public class Dao {
 	}
 	public <T> T getOne(SqlQuery query,Class<T> handler,Connection connection) throws Exception{
 		return executeQuery(query, new BeanHandler<T>(handler, rowProcessor), connection, false);
+	}
+	
+	public List<Integer> getIntegerList(SqlQuery query) throws Exception{
+		List<Object[]> objectsList=executeQuery(query, new ArrayListHandler(), getConnection(), false);
+		List<Integer> integerList=new ArrayList<>();
+		for (Object[] objects : objectsList) {
+			if(null!=objects&&objects.length>0){
+				integerList.add((Integer)objects[0]);
+			}
+		}
+		return integerList;
+	}
+	public List<Integer> getIntegerList(SqlQuery query,Connection connection) throws Exception{
+		List<Object[]> objectsList=executeQuery(query, new ArrayListHandler(), connection, false);
+		List<Integer> integerList=new ArrayList<>();
+		for (Object[] objects : objectsList) {
+			if(null!=objects&&objects.length>0){
+				integerList.add((Integer)objects[0]);
+			}
+		}
+		return integerList;
 	}
 	
 	public <T> List<T> getList(SqlQuery query) throws Exception{

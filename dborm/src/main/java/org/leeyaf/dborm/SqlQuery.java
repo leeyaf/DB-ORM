@@ -59,4 +59,10 @@ public class SqlQuery {
 	public List<Object> getParamsData(){
 		return this.params;
 	}
+	
+	public void removeLastSqlChar(){
+		if(sql.length()>0){
+			sql.deleteCharAt(sql.length()-1);
+		}
+	}
 }

@@ -6,6 +6,13 @@ If you dont like the Hibernate or some else big bloated ORM frameworks, you shou
 
 原理介绍文章参见[这里](http://www.jianshu.com/p/f52d34ae9289)
 
+注意事项：
+
+* 默认使用tomcat的链接池（其他连接池请自行build，或fork扩展）
+* 默认事务自动提交（一个用例多次查询，请手动创建事务，避免数据库创建多个事务）
+* 只对常用数据库操作进行伪ORM封装（特殊查询请使用jdbc）
+* 无任何缓存
+
 ## Installation
 
 下载源码，使用maven构建
@@ -97,7 +104,3 @@ public static void main(String[] args) {
 ## Automation
 
 可以使用 <code>ModuleGenerator.generate("tabel_name");</code> 自动生成实体映射文件。
-
-## Others
-
-QQ交流群: 457364985
